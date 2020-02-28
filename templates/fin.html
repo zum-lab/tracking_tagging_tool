@@ -1,0 +1,111 @@
+<html>
+    <style>
+        #mainselection select {
+            border: 0;
+            color: rgb(0, 0, 0);
+            background: transparent;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 2px 10px;
+            -webkit-appearance: none;
+        }
+
+        #mainselection {
+            overflow:hidden;
+            width:350px;
+            background: rgb(214, 138, 138) ;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    <div class="container" style="margin-top: 50px;">
+        <button class="btn btn-lg btn-info" onclick="location.href='/?json={{jsonfile}}&vidx={{vidx}}'" style="width: 100%;color:black;font-weight: bold;">BACK</button>
+        <br>
+        <div id="mainselection" style="width:100%;">
+            <select id="json_selection" onchange="jsonChanged()" style="width: 100%;">
+            <option disabled selected value>Json File</option>
+            {% for i in json_list%}
+            <option value="{{i}}">{{i}}</option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <div id="mainselection" style="width:100%;background: rgb(124, 141, 160)">
+            <select id="vidx_selection" onchange="vidxChanged()" style="width: 100%;">
+            <option disabled selected value>Video Idx</option>
+            {% for i in vidx_list%}
+            <option value="{{i}}">video_{{i}}</option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <div id="mainselection" style="width:100%;background: rgb(134, 173, 161)">
+            <select id="tid_selection" onchange="tidChanged()" style="width: 100%;">
+            <option disabled selected value>Tracking Idx</option>
+            {% for i in tid_list%}
+            <option value="{{i}}">{{i}}</option>
+            {% endfor %}
+            </select>
+        </div>
+        <br>
+        <br>
+        <div class="row">
+            {% for image_path in image_path_list %}
+            <div class="card col-md-3" onclick="show_frame('{{jsonfile}}', '{{vidx}}', '{{image_path[1]}}', '{{tid}}')">
+                <img class="card-img-top" src="{{image_path[0]}}" alt="Card image cap" style="width:100%; height:15vw;">
+                <div class="card-block text-center">
+                    <h4 class="card-title">frame_{{image_path[1]}}</h4>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+<script>
+if("{{ error_message }}" !== ""){
+    alert("{{ error_message }}");
+    history.go(-1);
+}
+set_select("{{jsonfile}}", "{{vidx}}", "{{tid}}");
+
+function set_select(json_select, vidx_select, tid_select) {    
+    document.getElementById('json_selection').value = json_select;
+    document.getElementById('vidx_selection').value = vidx_select;
+    document.getElementById('tid_selection').value = tid_select;
+}
+
+function jsonChanged(){
+    json_file_select = document.getElementById("json_selection");
+    json_filename = json_file_select.options[json_file_select.selectedIndex].value;
+    
+    uri = "?json=" + json_filename;
+    
+    location.href = uri;
+}
+
+function tidChanged(){
+    json_file_select = document.getElementById("json_selection");
+    json_filename = json_file_select.options[json_file_select.selectedIndex].value;
+    vidx_select = document.getElementById("vidx_selection");
+    vidx = vidx_select.options[vidx_select.selectedIndex].value;
+    tid_select = document.getElementById("tid_selection");
+    tid = tid_select.options[tid_select.selectedIndex].value;
+
+    uri = "?json=" + json_filename;
+    uri = uri + "&vidx=" + vidx;
+    uri = uri + "&tid=" + tid;
+
+    location.href = uri;
+}
+
+function show_frame(jsonfile, vidx, fidx, tid){
+    uri = "/?json=" + jsonfile;
+    uri = uri + "&vidx=" + vidx;
+    uri = uri + "&fidx=" + fidx;
+    uri = uri + "&tid=" + tid;
+
+    location.href = uri;
+}
+
+</script>
+</html>

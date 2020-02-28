@@ -1,0 +1,416 @@
+<html>
+    <style>
+        #content{
+            margin-top: 30px;
+            margin-left: 200px;
+        }
+        #canvas {
+            width: 960px;
+            height: 540px;
+           z-index:0;
+           background-repeat: no-repeat;
+           background-size: contain;
+            margin-top: 50px;
+            margin-left: 10px;
+            float:left;
+           }
+        .rectangle {
+            border: 2px solid #FF0000;
+            position: absolute;
+            z-index:2;
+        }
+        #sidebar {
+            width:300px;
+            height: 540px;
+            float:left;
+            
+            margin-left:100px;
+        }
+        #detections {
+            height:350px;
+            overflow:auto;
+            overflow-x: hidden;
+        }
+        #mainselection select {
+            border: 0;
+            color: rgb(0, 0, 0);
+            background: transparent;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 2px 10px;
+            -webkit-appearance: none;
+        }
+
+        #mainselection {
+            overflow:hidden;
+            width:350px;
+            background: rgb(214, 138, 138) ;
+        }
+
+        .list-group-item{
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+    </style>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<div id="content">
+        <div id="canvas">
+        </div>
+
+        <div id="sidebar">
+            <button class="btn btn-lg btn-info" onclick="reload()" style="width: 100%;color:black;font-weight: bold;">RELOAD</button>
+            <br><br>
+            
+            <div class="list-group" id="detections">
+                <div style="margin-bottom: 5px;">
+                    <p id="all_item" onclick="activate_all()" class="list-group-item" style="background-color:rgb(150, 150, 3);">All</p>
+                </div>
+                {% for detection in detections %}
+                <div id="{{detection[5]}}_item_div" style="margin-bottom: 5px;">
+                    <button class="btn btn-sm btn-primary" onclick="modify_bbox('{{detection[5]}}')">EDIT</button>
+                    <button class="btn btn-sm btn-danger" onclick="del_bbox('{{detection[5]}}')">DELETE</button>
+                    <p id="{{detection[5]}}_item" onclick="activate_tid('{{detection[5]}}', {{detection[6]}})" class="list-group-item" data-box="{{detection[6]}}">
+                        <span style="background-color:rgb({{detection[6][0]}}, {{detection[6][1]}}, {{detection[6][2]}});">{{detection[5]}}</span>
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <h3 style="font-weight: bold; text-align: center;">ADD</h3>
+            {% for tid_type in tid_types %}
+            <div style="width: 45%;float:left;margin-left:5px; margin-right: 5px;">
+                <select class="form-control" id="{{tid_type}}_select" onchange="add_bbox('{{tid_type}}')" style="width:100%;">
+                    <option disabled selected value>{{tid_type}}</option>
+                    <option value="{{tid_type}}_new">{{tid_type}}_new</option>
+                    {% for i in tid_types[tid_type] %}
+                        <option value="{{i}}">{{i}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endfor %}
+            <br><br>
+            
+            <button class="btn btn-lg btn-danger" onclick="save()" style="width: 100%;color:black;font-weight: bold;margin-top: 10px;">SAVE</button>
+            <br><br>
+
+            <button class="btn btn-lg btn-secondary" onclick="prev()" style="width: 45%;color:black;font-weight: bold;">PREV</button>
+            <button class="btn btn-lg btn-secondary" onclick="next()" style="width: 45%;color:black;font-weight: bold;float:right">NEXT</button>
+            <br><br>
+            
+            <div id="mainselection" style="width:300px;">
+                <select id="json_selection" onchange="jsonChanged()" style="width: 100%;">
+                <option disabled selected value>Json File</option>
+                {% for i in json_list%}
+                <option value="{{i}}">{{i}}</option>
+                {% endfor %}
+                </select>
+            </div>
+
+            <div id="mainselection" style="width:300px;background: rgb(124, 141, 160)">
+                <select id="vidx_selection" style="width: 100%;">
+                <option disabled selected value>Video Idx</option>
+                {% for i in vidx_list%}
+                <option value="{{i}}">video_{{i}}</option>
+                {% endfor %}
+                </select>
+            </div>
+
+            <div id="mainselection" style="width:300px;background: rgb(134, 173, 161)">
+                <select id="fidx_selection" style="width: 100%;">
+                <option disabled selected value>frame Idx</option>
+                {% for i in fidx_list%}
+                <option value="{{i}}">frame_{{i}}</option>
+                {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-lg btn-info" onclick="search_json_vidx_fidx()" style="width: 100%;color:black;font-weight: bold;">SEARCH</button>
+            <br><br>
+
+            <button class="btn btn-lg btn-primary" onclick="location.href='/fin?json={{jsonfile}}&vidx={{vidx}}'" style="width: 100%;color:black;font-weight: bold;">SHOW RESULT</button>
+        </div>
+    </div>
+    
+<script>
+
+if("{{ error_message }}" !== ""){
+    alert("{{ error_message }}");
+}
+
+var canvas = document.getElementById('canvas');
+//var detections = [[961.1323242188, 403.7423095703, 1027.7508544922, 533.9088134766, 'person_2', [112, 182, 110]], [1209.5654296875, 437.4125976562, 1304.0356445312, 660.2440185547, 'person_0', [1, 238, 179]]];
+{% autoescape false %}
+var detections = {{detections}};
+{% endautoescape %}
+
+var add = 0;
+var modify = 0;
+var selected_tid = -1;
+
+detectionsDraw(canvas, detections);
+initDraw(canvas);
+set_select("{{jsonfile}}", "{{vidx}}", "{{fidx}}");
+
+function reload(){
+    location.reload();
+}
+
+function next(){
+    location.href = "?next=1";
+}
+function prev(){
+    location.href = "?next=-1";
+}
+
+function save(){
+    location.href = "?save=1&detections=" + JSON.stringify(detections);
+}
+
+function set_select(json_select, vidx_select, fidx_select) {    
+    document.getElementById('json_selection').value = json_select;
+    document.getElementById('vidx_selection').value = vidx_select;
+    document.getElementById('fidx_selection').value = fidx_select;
+}
+
+function jsonChanged(){
+    json_file_select = document.getElementById("json_selection");
+    json_filename = json_file_select.options[json_file_select.selectedIndex].value;
+    
+    uri = "?json=" + json_filename;
+    
+    location.href = uri;
+}
+
+function search_json_vidx_fidx(){
+    json_file_select = document.getElementById("json_selection");
+    json_filename = json_file_select.options[json_file_select.selectedIndex].value;
+    vidx_select = document.getElementById("vidx_selection");
+    vidx = vidx_select.options[vidx_select.selectedIndex].value;
+    fidx_select = document.getElementById("fidx_selection");
+    fidx = fidx_select.options[fidx_select.selectedIndex].value;
+
+    uri = "?json=" + json_filename;
+    uri = uri + "&vidx=" + vidx;
+    uri = uri + "&fidx=" + fidx;
+
+    location.href = uri;
+}
+
+function modify_bbox(tid, new_bbox){
+    if(new_bbox !== undefined){
+        found_index = detections.findIndex(function (element, index, array){
+            return element[5] == tid;
+        });
+
+        detections[found_index][0] = new_bbox[0];
+        detections[found_index][1] = new_bbox[1];
+        detections[found_index][2] = new_bbox[2];
+        detections[found_index][3] = new_bbox[3];
+
+        modify = 0;
+        selected_tid = -1;
+    }else{
+        modify = 1;
+        add = 0;
+        selected_tid = tid;
+    }
+}
+
+function add_bbox(tid_type, new_bbox){
+    if(new_bbox !== undefined){
+        new_bbox.push(0); //score
+        new_bbox.push(selected_tid);
+        detections.push(new_bbox);
+
+        add = 0;
+        selected_tid = -1;
+    }else{
+        tid_type_select = document.getElementById(tid_type+"_select");
+        selected_tid = tid_type_select.options[tid_type_select.selectedIndex].value;
+        
+        {% autoescape false %}
+        for (var key in {{tid_types}}) {
+            if (key !== tid_type){
+                other = document.getElementById(key+"_select");
+                other.selectedIndex = 0;
+            }
+        }
+        {% endautoescape %}
+        
+        modify = 0;
+        add = 1;
+        
+    }
+}
+
+function del_bbox(tid){
+    found_index = detections.findIndex(function (element, index, array){
+            return element[5] == tid;
+    });
+
+    detections.splice(found_index, 1);
+
+    item = document.getElementById(tid+"_item_div");
+    box = document.getElementById(tid);
+    item.remove();
+    box.remove();
+}
+
+function activate_all(){
+    all_item = document.getElementById("all_item");
+
+    if(all_item.style.backgroundColor){
+        all_item.style.backgroundColor = "";
+        detections.forEach(function (item, index, array){
+            list_item = document.getElementById(item[5]+"_item");
+            list_item.style.backgroundColor = "";
+
+            box = document.getElementById(item[5]);
+            box.style.display="none";
+        });
+    }else{
+        all_item.style.backgroundColor = "rgb(150, 150, 3)";
+        detections.forEach(function (item, index, array){
+            list_item = document.getElementById(item[5]+"_item");
+            list_item.style.backgroundColor = "rgb("+item[6][0]+","+item[6][1]+","+item[6][2]+")";
+
+            box = document.getElementById(item[5]);
+            box.style.display="block";
+        });
+    }
+}
+
+function activate_tid(tid, rgb){
+    item = document.getElementById(tid+"_item");
+    box = document.getElementById(tid);
+
+    if(item.style.backgroundColor){
+        item.style.backgroundColor = "";
+        box.style.display="none";
+
+        all_item = document.getElementById("all_item");
+        all_item.style.backgroundColor = "";
+    }else{
+        item.style.backgroundColor = "rgb("+rgb[0]+", "+rgb[1]+", "+rgb[2]+")";
+        box.style.display="block";
+    }
+}
+
+function detectionsDraw(canvas, detections){
+    detections.forEach(function (item, index, array){
+        element = document.createElement('div');
+        element.className = 'rectangle';
+        element.id = item[5];
+        element.style.left = item[0]/2 + canvas.offsetLeft + 'px';
+        element.style.top = item[1]/2 + canvas.offsetTop + 'px';
+        element.style.width = item[2]/2 - item[0]/2 + 'px';
+        element.style.height = item[3]/2 - item[1]/2 + 'px';
+        element.style.border = "2px solid rgb("+item[6][0]+","+item[6][1]+","+item[6][2]+")";
+        element.style.zindex = 1;
+
+        canvas.appendChild(element)
+        canvas.style.cursor = "crosshair";
+
+        list_item = document.getElementById(item[5]+"_item");
+        list_item.style.backgroundColor = "rgb("+item[6][0]+","+item[6][1]+","+item[6][2]+")";
+    });
+    
+    if ('{{tid}}' !== 'None'){
+        activate_all();
+        document.getElementById('{{tid}}_item').onclick();
+    }
+}
+
+function initDraw(canvas) {
+    canvas.style.backgroundImage="url('{{img_name}}')";
+    function cal_point(mouse){
+        box_startX = mouse.startX - canvas.offsetLeft;
+        box_startY = mouse.startY - canvas.offsetTop;
+        box_endX = mouse.x - canvas.offsetLeft;
+        box_endY = mouse.y - canvas.offsetTop;
+        
+        box_startX = (box_startX < 0) ? 0 : box_startX;
+        box_startY = (box_startY < 0) ? 0 : box_startY;
+        box_endX = (box_endX < 0) ? 0 : box_endX;
+        box_endY = (box_endY < 0) ? 0 : box_endY;
+
+        box_startX = (box_startX > canvas.offsetWidth) ? canvas.offsetWidth : box_startX;
+        box_startY = (box_startY > canvas.offsetHeight) ? canvas.offsetHeight : box_startY;
+        box_endX = (box_endX > canvas.offsetWidth) ? canvas.offsetWidth : box_endX;
+        box_endY = (box_endY > canvas.offsetHeight) ? canvas.offsetHeight : box_endY;
+
+        if (box_endX < box_startX){
+            tmp = box_startX;
+            box_startX = box_endX;
+            box_endX = tmp;
+        }
+        if (box_endY < box_startY){
+            tmp = box_startY;
+            box_startY = box_endY;
+            box_endY = tmp;
+        }
+
+        return [box_startX * 2, box_startY * 2, box_endX * 2, box_endY * 2]
+    };
+
+    var mouse = {
+        x: 0,
+        y: 0,
+        startX: 0,
+        startY: 0
+    };
+    var element = null;
+
+    canvas.onmousemove = function (e) {
+        mouse.x = e.pageX; 
+        mouse.y = e.pageY;
+        
+        if (element !== null) {
+            element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
+            element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
+            element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x + 'px' : mouse.startX + 'px';
+            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y + 'px' : mouse.startY + 'px';
+        }
+    }
+
+    canvas.onclick = function (e) {
+        if (element !== null) {
+            new_bbox = cal_point(mouse);
+
+            if (modify == 1){
+                old_element = document.getElementById(selected_tid);
+                old_element.style.width = element.style.width;
+                old_element.style.height = element.style.height;
+                old_element.style.left = element.style.left;
+                old_element.style.top = element.style.top;
+                element.remove();
+                
+                modify_bbox(selected_tid, new_bbox);
+            }
+            else if (add == 1){
+                add_bbox(null, new_bbox);
+            }
+            else{
+                element.remove();
+            }
+            element = null;
+            canvas.style.cursor = "default";
+        } else {
+            mouse.startX = mouse.x;
+            mouse.startY = mouse.y;
+
+            element = document.createElement('div');
+            element.className = 'rectangle'
+            element.style.left = mouse.x + 'px';
+            element.style.top = mouse.y + 'px';
+
+            canvas.appendChild(element)
+            canvas.style.cursor = "crosshair";
+        }
+
+        
+    }
+}
+</script>
+</html>
