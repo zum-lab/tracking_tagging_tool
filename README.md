@@ -48,7 +48,7 @@ $ python run.py
 * /fin
 
 ### /
-![home](master/PNG/home.png)
+![home](https://github.com/zum-lab/tracking_tagging_tool/blob/master/PNG/home.png)
 1. 현재 Frame의 이미지와 Tagging된 Bounding Box
 	- 현재 Frame 속 Tagging된 Bounding Box를 시각화
 2. Reload 버튼
@@ -82,7 +82,7 @@ $ python run.py
     - Tagging 된 Tracking ID의 Frame 별 이미지 시각화
 
 ### /fin
-![fin](master/PNG/fin.png)
+![fin](https://github.com/zum-lab/tracking_tagging_tool/blob/master/PNG/fin.png)
 1. Back 버튼
 	- 현재의 json 파일, Video ID 정보를 가지고 Tagging 화면('/')으로 돌아가기
 2. 검색기
@@ -93,11 +93,11 @@ $ python run.py
     - 이미지 클릭 시 Frame 이미지에 해당 Tracking ID만 활성화 된 Tagging 화면('/') 확인
 
 
-### Ack
-이 도구는 2019년도 정부(과학기술정보통신부)의 재원으로 정보통신기획평가원의 지원을 받아 수행된 연구임
-This work was supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government(MSIT)
-과제번호 : 2019-0-01762
-과제명 : 드론 영상에서의 다중 객체 추적을 위한 딥러닝 기반 영상 처리 기술 개발
+## Ack
+이 프로그램은 2019년도 정부(과학기술정보통신부)의 재원으로 정보통신기획평가원의 지원을 받아 수행된 연구임  
+This work was supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT)  
+과제번호 : 2019-0-01762  
+과제명 : 드론 영상에서의 다중 객체 추적을 위한 딥러닝 기반 영상 처리 기술 개발  
 
 
 
