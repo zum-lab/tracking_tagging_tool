@@ -1,12 +1,27 @@
 <html>
     <style>
         #content{
+            width: 100%;
             margin-top: 30px;
-            margin-left: 200px;
+            margin-left: 10px;
+        }
+        #imgcontent{
+            width:960px;
         }
         #canvas {
             width: 960px;
             height: 540px;
+           z-index:0;
+           background-repeat: no-repeat;
+           background-size: contain;
+            margin-top: 50px;
+            margin-left: 10px;
+            float:left;
+           }
+
+        #pre_canvas {
+            width: 480px;
+            height: 270px;
            z-index:0;
            background-repeat: no-repeat;
            background-size: contain;
@@ -20,11 +35,11 @@
             z-index:2;
         }
         #sidebar {
-            width:300px;
+            width:250px;
             height: 540px;
-            float:left;
-            
-            margin-left:100px;
+            position: absolute; /*or fixed*/
+            right: 0px;
+            margin-left:20px;
         }
         #detections {
             height:350px;
@@ -43,7 +58,7 @@
 
         #mainselection {
             overflow:hidden;
-            width:350px;
+            width:100%;
             background: rgb(214, 138, 138) ;
         }
 
@@ -54,83 +69,89 @@
 
     </style>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
 <div id="content">
+    <div id="imgcontent">
         <div id="canvas">
         </div>
 
-        <div id="sidebar">
-            <button class="btn btn-lg btn-info" onclick="reload()" style="width: 100%;color:black;font-weight: bold;">RELOAD</button>
-            <br><br>
-            
-            <div class="list-group" id="detections">
-                <div style="margin-bottom: 5px;">
-                    <p id="all_item" onclick="activate_all()" class="list-group-item" style="background-color:rgb(150, 150, 3);">All</p>
-                </div>
-                {% for detection in detections %}
-                <div id="{{detection[5]}}_item_div" style="margin-bottom: 5px;">
-                    <button class="btn btn-sm btn-primary" onclick="modify_bbox('{{detection[5]}}')">EDIT</button>
-                    <button class="btn btn-sm btn-danger" onclick="del_bbox('{{detection[5]}}')">DELETE</button>
-                    <p id="{{detection[5]}}_item" onclick="activate_tid('{{detection[5]}}', {{detection[6]}})" class="list-group-item" data-box="{{detection[6]}}">
-                        <span style="background-color:rgb({{detection[6][0]}}, {{detection[6][1]}}, {{detection[6][2]}});">{{detection[5]}}</span>
-                    </p>
-                </div>
-                {% endfor %}
-            </div>
-            
-            <h3 style="font-weight: bold; text-align: center;">ADD</h3>
-            {% for tid_type in tid_types %}
-            <div style="width: 45%;float:left;margin-left:5px; margin-right: 5px;">
-                <select class="form-control" id="{{tid_type}}_select" onchange="add_bbox('{{tid_type}}')" style="width:100%;">
-                    <option disabled selected value>{{tid_type}}</option>
-                    <option value="{{tid_type}}_new">{{tid_type}}_new</option>
-                    {% for i in tid_types[tid_type] %}
-                        <option value="{{i}}">{{i}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            {% endfor %}
-            <br><br>
-            
-            <button class="btn btn-lg btn-danger" onclick="save()" style="width: 100%;color:black;font-weight: bold;margin-top: 10px;">SAVE</button>
-            <br><br>
-
-            <button class="btn btn-lg btn-secondary" onclick="prev()" style="width: 45%;color:black;font-weight: bold;">PREV</button>
-            <button class="btn btn-lg btn-secondary" onclick="next()" style="width: 45%;color:black;font-weight: bold;float:right">NEXT</button>
-            <br><br>
-            
-            <div id="mainselection" style="width:300px;">
-                <select id="json_selection" onchange="jsonChanged()" style="width: 100%;">
-                <option disabled selected value>Json File</option>
-                {% for i in json_list%}
-                <option value="{{i}}">{{i}}</option>
-                {% endfor %}
-                </select>
-            </div>
-
-            <div id="mainselection" style="width:300px;background: rgb(124, 141, 160)">
-                <select id="vidx_selection" style="width: 100%;">
-                <option disabled selected value>Video Idx</option>
-                {% for i in vidx_list%}
-                <option value="{{i}}">video_{{i}}</option>
-                {% endfor %}
-                </select>
-            </div>
-
-            <div id="mainselection" style="width:300px;background: rgb(134, 173, 161)">
-                <select id="fidx_selection" style="width: 100%;">
-                <option disabled selected value>frame Idx</option>
-                {% for i in fidx_list%}
-                <option value="{{i}}">frame_{{i}}</option>
-                {% endfor %}
-                </select>
-            </div>
-
-            <button class="btn btn-lg btn-info" onclick="search_json_vidx_fidx()" style="width: 100%;color:black;font-weight: bold;">SEARCH</button>
-            <br><br>
-
-            <button class="btn btn-lg btn-primary" onclick="location.href='/fin?json={{jsonfile}}&vidx={{vidx}}'" style="width: 100%;color:black;font-weight: bold;">SHOW RESULT</button>
+        <div id="pre_canvas">
         </div>
     </div>
+        
+    <div id="sidebar">
+        <button class="btn btn-lg btn-info" onclick="reload()" style="width: 100%;color:black;font-weight: bold;">RELOAD</button>
+        <br><br>
+        
+        <div class="list-group" id="detections">
+            <div style="margin-bottom: 5px;">
+                <p id="all_item" onclick="activate_all()" class="list-group-item" style="background-color:rgb(150, 150, 3);">All</p>
+            </div>
+            {% for detection in detections %}
+            <div id="{{detection[5]}}_item_div" style="margin-bottom: 5px;">
+                <button class="btn btn-sm btn-primary" onclick="modify_bbox('{{detection[5]}}')">EDIT</button>
+                <button class="btn btn-sm btn-danger" onclick="del_bbox('{{detection[5]}}')">DELETE</button>
+                <p id="{{detection[5]}}_item" onclick="activate_tid('{{detection[5]}}', {{detection[6]}})" class="list-group-item" data-box="{{detection[6]}}">
+                    <span style="background-color:rgb({{detection[6][0]}}, {{detection[6][1]}}, {{detection[6][2]}});">{{detection[5]}}</span>
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <h3 style="font-weight: bold; text-align: center;">ADD</h3>
+        {% for tid_type in tid_types %}
+        <div style="width: 45%;float:left;margin-left:5px; margin-right: 5px;">
+            <select class="form-control" id="{{tid_type}}_select" onchange="add_bbox('{{tid_type}}')" style="width:100%;">
+                <option disabled selected value>{{tid_type}}</option>
+                <option value="{{tid_type}}_new">{{tid_type}}_new</option>
+                {% for i in tid_types[tid_type] %}
+                    <option value="{{i}}">{{i}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endfor %}
+        <br><br>
+        
+        <button class="btn btn-lg btn-danger" onclick="save()" style="width: 100%;color:black;font-weight: bold;margin-top: 10px;">SAVE</button>
+        <br><br>
+
+        <button class="btn btn-lg btn-secondary" onclick="prev()" style="width: 45%;color:black;font-weight: bold;">PREV</button>
+        <button class="btn btn-lg btn-secondary" onclick="next()" style="width: 45%;color:black;font-weight: bold;float:right">NEXT</button>
+        <br><br>
+        
+        <div id="mainselection">
+            <select id="json_selection" onchange="jsonChanged()" style="width: 100%;">
+            <option disabled selected value>Json File</option>
+            {% for i in json_list%}
+            <option value="{{i}}">{{i}}</option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <div id="mainselection" style="background: rgb(124, 141, 160)">
+            <select id="vidx_selection" style="width: 100%;">
+            <option disabled selected value>Video Idx</option>
+            {% for i in vidx_list%}
+            <option value="{{i}}">video_{{i}}</option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <div id="mainselection" style="background: rgb(134, 173, 161)">
+            <select id="fidx_selection" style="width: 100%;">
+            <option disabled selected value>frame Idx</option>
+            {% for i in fidx_list%}
+            <option value="{{i}}">frame_{{i}}</option>
+            {% endfor %}
+            </select>
+        </div>
+
+        <button class="btn btn-lg btn-info" onclick="search_json_vidx_fidx()" style="width: 100%;color:black;font-weight: bold;">SEARCH</button>
+        <br><br>
+
+        <button class="btn btn-lg btn-primary" onclick="location.href='/fin?json={{jsonfile}}&vidx={{vidx}}'" style="width: 100%;color:black;font-weight: bold;">SHOW RESULT</button>
+    </div>
+</div>
     
 <script>
 
@@ -139,6 +160,7 @@ if("{{ error_message }}" !== ""){
 }
 
 var canvas = document.getElementById('canvas');
+var pre_canvas = document.getElementById('pre_canvas');
 //var detections = [[961.1323242188, 403.7423095703, 1027.7508544922, 533.9088134766, 'person_2', [112, 182, 110]], [1209.5654296875, 437.4125976562, 1304.0356445312, 660.2440185547, 'person_0', [1, 238, 179]]];
 {% autoescape false %}
 var detections = {{detections}};
@@ -150,6 +172,16 @@ var selected_tid = -1;
 
 detectionsDraw(canvas, detections);
 initDraw(canvas);
+
+if (pre_detections !== 'None'){
+    {% autoescape false %}
+    var pre_detections = {{pre_detections}};
+    {% endautoescape %}
+    pre_canvas.style.backgroundImage="url('{{pre_img_name}}')";
+    pre_detectionsDraw(pre_canvas, pre_detections);
+}
+
+
 set_select("{{jsonfile}}", "{{vidx}}", "{{fidx}}");
 
 function reload(){
@@ -320,6 +352,23 @@ function detectionsDraw(canvas, detections){
         activate_all();
         document.getElementById('{{tid}}_item').onclick();
     }
+}
+
+function pre_detectionsDraw(pre_canvas, pre_detections){
+    pre_detections.forEach(function (item, index, array){
+        element = document.createElement('div');
+        element.className = 'rectangle';
+        element.id = "pre_" + item[5];
+        element.style.left = item[0]/4 + pre_canvas.offsetLeft + 'px';
+        element.style.top = item[1]/4 + pre_canvas.offsetTop + 'px';
+        element.style.width = item[2]/4 - item[0]/4 + 'px';
+        element.style.height = item[3]/4 - item[1]/4 + 'px';
+        element.style.border = "2px solid rgb("+item[6][0]+","+item[6][1]+","+item[6][2]+")";
+        element.style.zindex = 1;
+
+        pre_canvas.appendChild(element)
+        pre_canvas.style.cursor = "crosshair";
+    });
 }
 
 function initDraw(canvas) {

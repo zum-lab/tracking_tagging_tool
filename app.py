@@ -65,14 +65,15 @@ def index():
             error_message = "error: check url"
             json_filename, vidx, fidx = tagging.set_info()
 
-    info, data = tagging.get_data()
+    info, data, pre_data = tagging.get_data()
     """
     info -> [current, json_filename, vidx, fidx, tid_types, error_message]
     data -> [image_path, detections]
+    pre_data -> [pre_image_path, pre_detections]
         current, vidx, fidx -> int
-        json_filename, image_path, error_message -> string
+        json_filename, image_path, pre_image_path, error_message -> string
         tid_types -> dictionary
-        detections -> [[x1, y1, x2, y2, score, tid, color], ... ]
+        detections, pre_detections -> [[x1, y1, x2, y2, score, tid, color], ... ]
     """
 
     error_message = info[5] if info[5] != "" else error_message
@@ -85,6 +86,7 @@ def index():
     return render_template(
         'index.html',
         img_name=data[0], detections=data[1],
+        pre_img_name=pre_data[0], pre_detections=pre_data[1],
         jsonfile=info[1], vidx=info[2], fidx=info[3], tid=tid,
         json_list=json_list, vidx_list=vidx_list, fidx_list=fidx_list,
         tid_types=info[4],

@@ -37,7 +37,7 @@ $ python run.py
 
 ## How to use
 ### 기능
-* 현재 Frame, Tagging된 Bounding Box 시각화
+* 현재/이전 Frame, Tagging된 Bounding Box 시각화
 * json 파일, Video ID, Frame ID를 이용한 Frame 검색
 * 기존 Bounding Box 수정 및 삭제
 * 새로운 Bounding Box 생성
@@ -80,6 +80,8 @@ $ python run.py
 7. Show result 버튼
 	- /fin 으로 redirect
     - Tagging 된 Tracking ID의 Frame 별 이미지 시각화
+8. 이전 Frame 이미지와 Tagging된 Bounding Box
+	- 바로 이전 Frame 이미지를 시각화하여 현재 Frame과 비교 가능
 
 ### /fin
 ![fin](https://github.com/zum-lab/tracking_tagging_tool/blob/master/PNG/fin.png)

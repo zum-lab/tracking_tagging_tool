@@ -201,20 +201,16 @@ class Tagging():
         
         return color
 
-    def get_data(self):
+    def extract_data_from_json(self, data):
         """
-        get processed data of self.current
-        the processed data should be not object of self.json_data
+        extract data from json format data
 
-        return current, json_filename, vidx, fidx, self.tid_types, error_message, image_path, detections for visualization
-            current, vidx, fidx -> int
-            json_filename, image_path, error_message -> string
-            self.tid_types -> dictionary
-            detections -> [[x1, y1, x2, y2, score, tid, color], ... ]
+        argument data
+            data -> dictionary
+        return image_path, processed_detections
+            image_path -> string
+            processed_detections -> [[x1, y1, x2, y2, score, tid, color], ... ]
         """
-        data = self.json_data[self.current]
-
-        # generate sorted new processed_detections for preventing call by object reference
         processed_detections = []
         for detection in data["detections"]:
             color = self.get_color_using_tid(detection)
@@ -223,10 +219,30 @@ class Tagging():
 
         # this line should be modified when the data["frame_path"] format is changed
         image_path = self.img_folder_name + "/".join(data["frame_path"].split("/")[-2:])
+
+        return image_path, processed_detections
+
+    def get_data(self):
+        """
+        get processed data of self.current
+        the processed data should be not object of self.json_data
+        get data(image, detections) of self.current - 1 for visualization
+
+        return current, json_filename, vidx, fidx, self.tid_types, error_message, image_path, processed_detections, pre_processed_detections, pre_image_path for visualization
+            current, vidx, fidx -> int
+            json_filename, image_path, pre_image_path, error_message -> string
+            self.tid_types -> dictionary
+            processed_detections, pre_processed_detections -> [[x1, y1, x2, y2, score, tid, color], ... ]
+        """
+        data = self.json_data[self.current]
+        pre_data = self.json_data[self.current-1] if self.current != 0 else []
         
+        pre_image_path, pre_processed_detections = self.extract_data_from_json(pre_data) if pre_data else ['None', []]
+        
+        image_path, processed_detections = self.extract_data_from_json(data)
         error_message = "" if os.path.isfile(image_path) else "image file does not exist"
 
-        return [self.current, self.json_filename, self.vidx, self.fidx, self.tid_types, error_message], [image_path, processed_detections]
+        return [self.current, self.json_filename, self.vidx, self.fidx, self.tid_types, error_message], [image_path, processed_detections], [pre_image_path, pre_processed_detections]
 
     def cal_new_tidx(self, new_detection):
         """
@@ -352,7 +368,7 @@ class Tagging():
 
             if not (os.path.isdir(directory_path)):
                 os.mkdir(directory_path)
-            
+
             image_path_list = [(self.get_image_path(directory_path, detection, data["frame_idx"], data["frame_path"]), str(data["frame_idx"]))
                 for data in self.json_data if data["video_idx"] == self.vidx
                     for detection in data["detections"]
