@@ -96,10 +96,8 @@ $ python run.py
 
 
 ## Ack
-이 프로그램은 2019년도 정부(과학기술정보통신부)의 재원으로 정보통신기획평가원의 지원을 받아 수행된 연구임  
+이 프로그램은 2019년도 과학기술정보통신부의 인공지능산업원천기술개발 사업의 일환으로 정보통신기획평가원의 지원을 받아 수행된 연구임 (과제번호 : 2019-0-01762)  
 This work was supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT)  
-과제번호 : 2019-0-01762  
-과제명 : 드론 영상에서의 다중 객체 추적을 위한 딥러닝 기반 영상 처리 기술 개발  
 
 
 
