@@ -96,23 +96,5 @@ $ python run.py
 
 
 ## Ack
-이 프로그램은 2019년도 과학기술정보통신부의 인공지능산업원천기술개발 사업의 일환으로 정보통신기획평가원의 지원을 받아 수행된 연구임 (과제번호 : 2019-0-01762)  
+이 프로그램은 과학기술정보통신부의 인공지능산업원천기술개발 사업의 일환으로 정보통신기획평가원의 지원을 받아 수행된 연구의 결과물임 (과제번호 : 2019-0-01762)  
 This work was supported by Institute of Information & communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT)  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
